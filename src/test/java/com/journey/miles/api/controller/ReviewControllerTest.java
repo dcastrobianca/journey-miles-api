@@ -25,12 +25,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -59,18 +60,16 @@ class ReviewControllerTest {
         ReviewDetailsData reviewDetails = new ReviewDetailsData(id, name, reviewText, photoPath);
         when(service.create(reviewData)).thenReturn(reviewDetails);
 
-        //when
-        MockHttpServletResponse response = mockMvc
-                .perform(
+        //when and then
+        mockMvc.perform(
                         post("/api/reviews")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(reviewDataJson.write(reviewData).getJson()))
-                .andReturn().getResponse();
+                .andExpect(status().isCreated())
+                .andExpect(content().json(reviewDetailsJson.write(reviewDetails).getJson()))
+                .andExpect(header().string("Location", containsString("/review/" + id)));
 
-        //then
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
-        assertThat(response.getContentAsString()).isEqualTo(reviewDetailsJson.write(reviewDetails).getJson());
-        assertThat(response.getHeader("Location").contains("/review/" + id)).isTrue();
+        verify(service).create(reviewData);
     }
 
     @Test
@@ -85,16 +84,12 @@ class ReviewControllerTest {
         ReviewDetailsData reviewDetails = new ReviewDetailsData(id, name, reviewText, photoPath);
         when(service.create(reviewData)).thenReturn(reviewDetails);
 
-        //when
-        MockHttpServletResponse response = mockMvc
-                .perform(
-                        post("/api/reviews")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(reviewDataJson.write(reviewData).getJson()))
-                .andReturn().getResponse();
-
-        //then
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        //when and then
+        mockMvc
+                .perform(post("/api/reviews")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(reviewDataJson.write(reviewData).getJson()))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -109,16 +104,12 @@ class ReviewControllerTest {
         ReviewDetailsData reviewDetails = new ReviewDetailsData(id, name, description, photoPath);
         when(service.create(reviewData)).thenReturn(reviewDetails);
 
-        //when
-        MockHttpServletResponse response = mockMvc
-                .perform(
-                        post("/api/reviews")
+        //when and then
+        mockMvc
+                .perform(post("/api/reviews")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(reviewDataJson.write(reviewData).getJson()))
-                .andReturn().getResponse();
-
-        //then
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -141,6 +132,7 @@ class ReviewControllerTest {
         mockMvc.perform(get("/api/reviews"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(reviewDetailsListJson.write(reviewPage).getJson()));
+        verify(service).findAll(pageable);
     }
 
     @Test
@@ -155,6 +147,8 @@ class ReviewControllerTest {
         mockMvc.perform(get("/api/reviews"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(reviewDetailsListJson.write(reviewPage).getJson()));
+
+        verify(service).findAll(pageable);
     }
 
 
