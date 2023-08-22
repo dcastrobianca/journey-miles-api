@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -40,5 +42,31 @@ class ReviewServiceTest {
         assertThat(reviewDetails.fullName()).isEqualTo(name);
         assertThat(reviewDetails.description()).isEqualTo(description);
         assertThat(reviewDetails.photoPath()).isEqualTo(photoPath);
+    }
+
+    @Test
+    void shouldReturnReviewDetailsListWith2Elements(){
+        //given
+        String name = "Fulano da Silva";
+        String description = "this is my option about journey miles";
+        String photoPath = "my/photo/path";
+        ReviewData reviewData = new ReviewData(name, description, photoPath);
+        reviewService.create(reviewData);
+        reviewService.create(reviewData);
+
+        //when
+        List<ReviewDetailsData> reviewsDetailsList = reviewService.findAll();
+        //then
+        assertEquals(2, reviewsDetailsList.size());
+    }
+
+    @Test
+    void shouldReturnEmptyReviewDetailsList(){
+        //given
+
+        //when
+        List<ReviewDetailsData> reviewsDetailsList = reviewService.findAll();
+        //then
+        assertEquals(0, reviewsDetailsList.size());
     }
 }
