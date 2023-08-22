@@ -6,6 +6,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
@@ -53,20 +56,21 @@ class ReviewServiceTest {
         ReviewData reviewData = new ReviewData(name, description, photoPath);
         reviewService.create(reviewData);
         reviewService.create(reviewData);
+        Pageable pageable = PageRequest.of(0,10);
 
         //when
-        List<ReviewDetailsData> reviewsDetailsList = reviewService.findAll();
+        Page<ReviewDetailsData> reviewsDetailsList = reviewService.findAll(pageable);
         //then
-        assertEquals(2, reviewsDetailsList.size());
+        assertEquals(2, reviewsDetailsList.getTotalElements());
     }
 
     @Test
     void shouldReturnEmptyReviewDetailsList(){
         //given
-
+        Pageable pageable = PageRequest.of(0,10);
         //when
-        List<ReviewDetailsData> reviewsDetailsList = reviewService.findAll();
+        Page<ReviewDetailsData> reviewsDetailsList = reviewService.findAll(pageable);
         //then
-        assertEquals(0, reviewsDetailsList.size());
+        assertEquals(0, reviewsDetailsList.getTotalElements());
     }
 }

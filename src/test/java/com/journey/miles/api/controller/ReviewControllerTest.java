@@ -12,6 +12,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -21,9 +25,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -36,7 +43,7 @@ class ReviewControllerTest {
     @Autowired
     private JacksonTester<ReviewDetailsData> reviewDetailsJson;
     @Autowired
-    private JacksonTester<List<ReviewDetailsData>> reviewDetailsListJson;
+    private JacksonTester<Page<ReviewDetailsData>> reviewDetailsListJson;
     @MockBean
     private ReviewService service;
 
@@ -124,28 +131,30 @@ class ReviewControllerTest {
         List<ReviewDetailsData> reviews = new ArrayList<>();
         reviews.add(new ReviewDetailsData(new Review(reviewData)));
         reviews.add(new ReviewDetailsData(new Review(reviewData)));
-        when(service.findAll()).thenReturn(reviews);
 
-        //when
-        var response = mockMvc
-                .perform(get("/api/reviews")).andReturn().getResponse();
-        //then
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.getContentAsString()).isEqualTo(reviewDetailsListJson.write(reviews).getJson());
+        Pageable pageable = PageRequest.of(0,10);
+        Page<ReviewDetailsData> reviewPage = new PageImpl<>(reviews, pageable, reviews.size());
+
+        when(service.findAll(pageable)).thenReturn(reviewPage);
+
+        //when and then
+        mockMvc.perform(get("/api/reviews"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(reviewDetailsListJson.write(reviewPage).getJson()));
     }
 
     @Test
     void shouldReturnEmptyReviewList() throws Exception {
         //given
         List<ReviewDetailsData> reviews = new ArrayList<>();
-        when(service.findAll()).thenReturn(reviews);
+        Pageable pageable = PageRequest.of(0,10);
+        Page<ReviewDetailsData> reviewPage = new PageImpl<>(reviews, pageable, reviews.size());
+        when(service.findAll(pageable)).thenReturn(reviewPage);
 
-        //when
-        var response = mockMvc
-                .perform(get("/api/reviews")).andReturn().getResponse();
-        //then
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.getContentAsString()).isEqualTo(reviewDetailsListJson.write(reviews).getJson());
+        //when and then
+        mockMvc.perform(get("/api/reviews"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(reviewDetailsListJson.write(reviewPage).getJson()));
     }
 
 

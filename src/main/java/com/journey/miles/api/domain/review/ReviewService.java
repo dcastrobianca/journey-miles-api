@@ -3,9 +3,9 @@ package com.journey.miles.api.domain.review;
 import com.journey.miles.api.domain.review.dto.ReviewData;
 import com.journey.miles.api.domain.review.dto.ReviewDetailsData;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class ReviewService {
@@ -19,8 +19,7 @@ public class ReviewService {
         return new ReviewDetailsData(review);
     }
 
-    public List<ReviewDetailsData> findAll() {
-        List<Review> reviews = repository.findAll();
-        return reviews.stream().map(ReviewDetailsData::new).toList();
+    public Page<ReviewDetailsData> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(ReviewDetailsData::new);
     }
 }
