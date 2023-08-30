@@ -1,6 +1,6 @@
 package com.journey.miles.api.domain.review;
 
-import com.journey.miles.api.domain.review.dto.ReviewData;
+import com.journey.miles.api.domain.review.dto.ReviewRegistrationData;
 import com.journey.miles.api.domain.review.dto.ReviewDetailsData;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ public class ReviewService {
     @Autowired
     private ReviewRepository repository;
 
-    public ReviewDetailsData create(ReviewData data) {
+    public ReviewDetailsData create(ReviewRegistrationData data) {
         Review review = new Review(data);
         repository.save(review);
         return new ReviewDetailsData(review);
@@ -32,5 +32,15 @@ public class ReviewService {
             throw new EntityNotFoundException("Could not found review with this id.");
         }
         return new ReviewDetailsData(review.get());
+    }
+
+    public ReviewDetailsData update(ReviewDetailsData data) {
+        Optional<Review> reviewOptional = repository.findById(data.id());
+        if(reviewOptional.isEmpty()){
+            throw new EntityNotFoundException("Could not found review with this id.");
+        }
+        Review review = reviewOptional.get();
+        review.update(data);
+        return new ReviewDetailsData(review);
     }
 }

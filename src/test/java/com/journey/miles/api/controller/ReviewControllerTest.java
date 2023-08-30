@@ -1,7 +1,7 @@
 package com.journey.miles.api.controller;
 
 import com.journey.miles.api.domain.review.Review;
-import com.journey.miles.api.domain.review.dto.ReviewData;
+import com.journey.miles.api.domain.review.dto.ReviewRegistrationData;
 import com.journey.miles.api.domain.review.dto.ReviewDetailsData;
 import com.journey.miles.api.domain.review.ReviewService;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,10 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -37,7 +37,7 @@ class ReviewControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    private JacksonTester<ReviewData> reviewDataJson;
+    private JacksonTester<ReviewRegistrationData> reviewDataJson;
     @Autowired
     private JacksonTester<ReviewDetailsData> reviewDetailsJson;
     @Autowired
@@ -53,20 +53,20 @@ class ReviewControllerTest {
         String name = "Fulano da Silva";
         String reviewText = "this is my option about journey miles";
         String photoPath = "my/photo/path";
-        ReviewData reviewData = new ReviewData(name, reviewText, photoPath);
+        ReviewRegistrationData reviewRegistrationData = new ReviewRegistrationData(name, reviewText, photoPath);
         ReviewDetailsData reviewDetails = new ReviewDetailsData(id, name, reviewText, photoPath);
-        when(service.create(reviewData)).thenReturn(reviewDetails);
+        when(service.create(reviewRegistrationData)).thenReturn(reviewDetails);
 
         //when and then
         mockMvc.perform(
                         post("/api/reviews")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(reviewDataJson.write(reviewData).getJson()))
+                                .content(reviewDataJson.write(reviewRegistrationData).getJson()))
                 .andExpect(status().isCreated())
                 .andExpect(content().json(reviewDetailsJson.write(reviewDetails).getJson()))
                 .andExpect(header().string("Location", containsString("/review/" + id)));
 
-        verify(service).create(reviewData);
+        verify(service).create(reviewRegistrationData);
     }
 
     @Test
@@ -77,15 +77,15 @@ class ReviewControllerTest {
         String name = "";
         String reviewText = "this is my option about journey miles";
         String photoPath = "my/photo/path";
-        ReviewData reviewData = new ReviewData(name, reviewText, photoPath);
+        ReviewRegistrationData reviewRegistrationData = new ReviewRegistrationData(name, reviewText, photoPath);
         ReviewDetailsData reviewDetails = new ReviewDetailsData(id, name, reviewText, photoPath);
-        when(service.create(reviewData)).thenReturn(reviewDetails);
+        when(service.create(reviewRegistrationData)).thenReturn(reviewDetails);
 
         //when and then
         mockMvc
                 .perform(post("/api/reviews")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(reviewDataJson.write(reviewData).getJson()))
+                        .content(reviewDataJson.write(reviewRegistrationData).getJson()))
                 .andExpect(status().isBadRequest());
     }
 
@@ -97,15 +97,15 @@ class ReviewControllerTest {
         String name = "Fulano da Silva";
         String description = "";
         String photoPath = "my/photo/path";
-        ReviewData reviewData = new ReviewData(name, description, photoPath);
+        ReviewRegistrationData reviewRegistrationData = new ReviewRegistrationData(name, description, photoPath);
         ReviewDetailsData reviewDetails = new ReviewDetailsData(id, name, description, photoPath);
-        when(service.create(reviewData)).thenReturn(reviewDetails);
+        when(service.create(reviewRegistrationData)).thenReturn(reviewDetails);
 
         //when and then
         mockMvc
                 .perform(post("/api/reviews")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(reviewDataJson.write(reviewData).getJson()))
+                                .content(reviewDataJson.write(reviewRegistrationData).getJson()))
                 .andExpect(status().isBadRequest());
     }
 
@@ -115,10 +115,10 @@ class ReviewControllerTest {
         String name = "Fulano da Silva";
         String description = "";
         String photoPath = "my/photo/path";
-        ReviewData reviewData = new ReviewData(name, description, photoPath);
+        ReviewRegistrationData reviewRegistrationData = new ReviewRegistrationData(name, description, photoPath);
         List<ReviewDetailsData> reviews = new ArrayList<>();
-        reviews.add(new ReviewDetailsData(new Review(reviewData)));
-        reviews.add(new ReviewDetailsData(new Review(reviewData)));
+        reviews.add(new ReviewDetailsData(new Review(reviewRegistrationData)));
+        reviews.add(new ReviewDetailsData(new Review(reviewRegistrationData)));
 
         Pageable pageable = PageRequest.of(0,10);
         Page<ReviewDetailsData> reviewPage = new PageImpl<>(reviews, pageable, reviews.size());
@@ -175,6 +175,42 @@ class ReviewControllerTest {
         mockMvc.perform(get("/api/reviews/"+id))
                 .andExpect(status().isNotFound());
         verify(service).findById(id);
+    }
+    @Test
+    void shouldReturnNewReviewDetailsDataWhenRecieveValidUpdateRequest() throws Exception {
+        //given
+        Long id = 1L;
+        String name = "Fulano da Silva";
+        String description = "";
+        String photoPath = "my/photo/path";
+        ReviewDetailsData detailsData =new ReviewDetailsData(id,name,description, photoPath);
+        String json = reviewDetailsJson.write(detailsData).getJson();
+        when(service.update(any())).thenReturn(detailsData);
+
+        //when and then
+        mockMvc.perform(put("/api/reviews")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(content().json(json));
+    }
+
+    @Test
+    void shouldReturnNewReviewDetailsDataWhenRecieveInvalidUpdateRequest() throws Exception {
+        //given
+        Long id= null;
+        String name = "Fulano da Silva";
+        String description = "";
+        String photoPath = "my/photo/path";
+        ReviewDetailsData detailsData =new ReviewDetailsData(id,name,description, photoPath);
+        String json = reviewDetailsJson.write(detailsData).getJson();
+        when(service.update(any())).thenReturn(detailsData);
+
+        //when and then
+        mockMvc.perform(put("/api/reviews")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest());
     }
 
 

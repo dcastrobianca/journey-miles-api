@@ -1,6 +1,6 @@
 package com.journey.miles.api.controller;
 
-import com.journey.miles.api.domain.review.dto.ReviewData;
+import com.journey.miles.api.domain.review.dto.ReviewRegistrationData;
 import com.journey.miles.api.domain.review.dto.ReviewDetailsData;
 import com.journey.miles.api.domain.review.ReviewService;
 import jakarta.validation.Valid;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -23,7 +22,7 @@ public class ReviewController {
     private ReviewService service;
 
     @PostMapping
-    public ResponseEntity<ReviewDetailsData> create(UriComponentsBuilder uriBuilder, @Valid @RequestBody ReviewData data) {
+    public ResponseEntity<ReviewDetailsData> create(UriComponentsBuilder uriBuilder, @Valid @RequestBody ReviewRegistrationData data) {
         ReviewDetailsData review = service.create(data);
         URI uri = uriBuilder.path("/review/{id}").buildAndExpand(review.id()).toUri();
         return ResponseEntity.created(uri).body(review);
@@ -37,6 +36,11 @@ public class ReviewController {
     @GetMapping("/{id}")
     public ResponseEntity<ReviewDetailsData> findById(@PathVariable Long id){
         return ResponseEntity.ok(service.findById(id));
+    }
+
+    @PutMapping
+    public ResponseEntity<ReviewDetailsData> update(@RequestBody @Valid ReviewDetailsData data){
+        return ResponseEntity.ok(service.update(data));
     }
 
 }
