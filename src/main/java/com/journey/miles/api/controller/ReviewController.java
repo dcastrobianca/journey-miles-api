@@ -34,4 +34,9 @@ public class ReviewController {
         return ResponseEntity.ok(service.findAll(pageable));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ReviewDetailsData> findById(@PathVariable Long id){
+        return ResponseEntity.ok(service.findById(id));
+    }
+
 }

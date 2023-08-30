@@ -4,6 +4,7 @@ import com.journey.miles.api.domain.review.Review;
 import com.journey.miles.api.domain.review.dto.ReviewData;
 import com.journey.miles.api.domain.review.dto.ReviewDetailsData;
 import com.journey.miles.api.domain.review.ReviewService;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,17 +17,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -149,6 +146,35 @@ class ReviewControllerTest {
                 .andExpect(content().json(reviewDetailsListJson.write(reviewPage).getJson()));
 
         verify(service).findAll(pageable);
+    }
+
+    @Test
+    void shouldReturnSpecificReviewFromId() throws Exception {
+        //given
+        Long id = 1L;
+        String name = "Fulano da Silva";
+        String description = "";
+        String photoPath = "my/photo/path";
+        ReviewDetailsData detailsData = new ReviewDetailsData(new Review(id,name, description, photoPath));
+        when(service.findById(id)).thenReturn(detailsData);
+
+        //when and then
+        mockMvc.perform(get("/api/reviews/"+id))
+                .andExpect(status().isOk())
+                .andExpect(content().json((reviewDetailsJson.write(detailsData).getJson())));
+        verify(service).findById(id);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenSearchByIdThatDontExist() throws Exception {
+        //given
+        Long id = 1L;
+        when(service.findById(id)).thenThrow(EntityNotFoundException.class);
+
+        //when and then
+        mockMvc.perform(get("/api/reviews/"+id))
+                .andExpect(status().isNotFound());
+        verify(service).findById(id);
     }
 
 

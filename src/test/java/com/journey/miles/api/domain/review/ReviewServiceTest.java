@@ -2,6 +2,7 @@ package com.journey.miles.api.domain.review;
 
 import com.journey.miles.api.domain.review.dto.ReviewData;
 import com.journey.miles.api.domain.review.dto.ReviewDetailsData;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +12,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -73,4 +73,30 @@ class ReviewServiceTest {
         //then
         assertEquals(0, reviewsDetailsList.getTotalElements());
     }
+
+    @Test
+    void shouldReturnReviewDetailsWhenFoundReviewById(){
+        //given
+        String name = "Fulano da Silva";
+        String description = "this is my option about journey miles";
+        String photoPath = "my/photo/path";
+        ReviewData reviewData = new ReviewData(name, description, photoPath);
+        ReviewDetailsData newReviewDetails = reviewService.create(reviewData);
+
+        //when
+        ReviewDetailsData reviewDetailsFoundById = reviewService.findById(newReviewDetails.id());
+
+        //then
+        assertThat(reviewDetailsFoundById).isEqualTo(newReviewDetails);
+    }
+
+    @Test
+    void shouldReturnEntityNotFoundExceptionWhenThereIsNoReviewWithID(){
+        //given
+        Long id = 1L;
+
+        //when and then
+        assertThrows(EntityNotFoundException.class, () -> reviewService.findById(id));
+    }
+
 }

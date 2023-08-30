@@ -2,6 +2,7 @@ package com.journey.miles.api.domain.review;
 
 import com.journey.miles.api.domain.review.dto.ReviewData;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "reviews")
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 public class Review {
