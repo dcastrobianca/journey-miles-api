@@ -25,8 +25,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -104,8 +103,8 @@ class ReviewControllerTest {
         //when and then
         mockMvc
                 .perform(post("/api/reviews")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(reviewDataJson.write(reviewRegistrationData).getJson()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(reviewDataJson.write(reviewRegistrationData).getJson()))
                 .andExpect(status().isBadRequest());
     }
 
@@ -120,7 +119,7 @@ class ReviewControllerTest {
         reviews.add(new ReviewDetailsData(new Review(reviewRegistrationData)));
         reviews.add(new ReviewDetailsData(new Review(reviewRegistrationData)));
 
-        Pageable pageable = PageRequest.of(0,10);
+        Pageable pageable = PageRequest.of(0, 10);
         Page<ReviewDetailsData> reviewPage = new PageImpl<>(reviews, pageable, reviews.size());
 
         when(service.findAll(pageable)).thenReturn(reviewPage);
@@ -136,7 +135,7 @@ class ReviewControllerTest {
     void shouldReturnEmptyReviewList() throws Exception {
         //given
         List<ReviewDetailsData> reviews = new ArrayList<>();
-        Pageable pageable = PageRequest.of(0,10);
+        Pageable pageable = PageRequest.of(0, 10);
         Page<ReviewDetailsData> reviewPage = new PageImpl<>(reviews, pageable, reviews.size());
         when(service.findAll(pageable)).thenReturn(reviewPage);
 
@@ -155,11 +154,11 @@ class ReviewControllerTest {
         String name = "Fulano da Silva";
         String description = "";
         String photoPath = "my/photo/path";
-        ReviewDetailsData detailsData = new ReviewDetailsData(new Review(id,name, description, photoPath));
+        ReviewDetailsData detailsData = new ReviewDetailsData(new Review(id, name, description, photoPath));
         when(service.findById(id)).thenReturn(detailsData);
 
         //when and then
-        mockMvc.perform(get("/api/reviews/"+id))
+        mockMvc.perform(get("/api/reviews/" + id))
                 .andExpect(status().isOk())
                 .andExpect(content().json((reviewDetailsJson.write(detailsData).getJson())));
         verify(service).findById(id);
@@ -172,18 +171,19 @@ class ReviewControllerTest {
         when(service.findById(id)).thenThrow(EntityNotFoundException.class);
 
         //when and then
-        mockMvc.perform(get("/api/reviews/"+id))
+        mockMvc.perform(get("/api/reviews/" + id))
                 .andExpect(status().isNotFound());
         verify(service).findById(id);
     }
+
     @Test
-    void shouldReturnNewReviewDetailsDataWhenRecieveValidUpdateRequest() throws Exception {
+    void shouldReturnUpdatedReviewDetailsDataWhenReceiveValidUpdateRequest() throws Exception {
         //given
         Long id = 1L;
         String name = "Fulano da Silva";
         String description = "";
         String photoPath = "my/photo/path";
-        ReviewDetailsData detailsData =new ReviewDetailsData(id,name,description, photoPath);
+        ReviewDetailsData detailsData = new ReviewDetailsData(id, name, description, photoPath);
         String json = reviewDetailsJson.write(detailsData).getJson();
         when(service.update(any())).thenReturn(detailsData);
 
@@ -196,13 +196,13 @@ class ReviewControllerTest {
     }
 
     @Test
-    void shouldReturnNewReviewDetailsDataWhenRecieveInvalidUpdateRequest() throws Exception {
+    void shouldReturnBadRequestWhenRecieveUpdateRequestWithoutId() throws Exception {
         //given
-        Long id= null;
+        Long id = null;
         String name = "Fulano da Silva";
         String description = "";
         String photoPath = "my/photo/path";
-        ReviewDetailsData detailsData =new ReviewDetailsData(id,name,description, photoPath);
+        ReviewDetailsData detailsData = new ReviewDetailsData(id, name, description, photoPath);
         String json = reviewDetailsJson.write(detailsData).getJson();
         when(service.update(any())).thenReturn(detailsData);
 
@@ -213,5 +213,25 @@ class ReviewControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void shouldReturnNoContentWhenDeleteExistingReview() throws Exception {
+        //given
+        Long id = 1L;
+
+        //when and then
+        mockMvc.perform(delete("/api/reviews/" + id))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenDeleteNonexistentReview() throws Exception {
+        //given
+        Long id = 1L;
+        doThrow(EntityNotFoundException.class).when(service).delete(any());
+
+        //when and then
+        mockMvc.perform(delete("/api/reviews/" + id))
+                .andExpect(status().isNotFound());
+    }
 
 }

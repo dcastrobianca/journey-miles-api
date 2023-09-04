@@ -28,7 +28,7 @@ public class ReviewService {
 
     public ReviewDetailsData findById(Long id) {
         Optional<Review> review = repository.findById(id);
-        if(review.isEmpty()){
+        if (review.isEmpty()) {
             throw new EntityNotFoundException("Could not found review with this id.");
         }
         return new ReviewDetailsData(review.get());
@@ -36,11 +36,19 @@ public class ReviewService {
 
     public ReviewDetailsData update(ReviewDetailsData data) {
         Optional<Review> reviewOptional = repository.findById(data.id());
-        if(reviewOptional.isEmpty()){
+        if (reviewOptional.isEmpty()) {
             throw new EntityNotFoundException("Could not found review with this id.");
         }
         Review review = reviewOptional.get();
         review.update(data);
         return new ReviewDetailsData(review);
+    }
+
+    public void delete(Long id) {
+        Optional<Review> reviewOptional = repository.findById(id);
+        if (reviewOptional.isEmpty()) {
+            throw new EntityNotFoundException("Could not found review with this id.");
+        }
+        repository.deleteById(id);
     }
 }

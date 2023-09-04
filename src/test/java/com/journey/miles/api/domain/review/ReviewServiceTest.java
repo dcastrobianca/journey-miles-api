@@ -48,7 +48,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    void shouldReturnReviewDetailsListWith2Elements(){
+    void shouldReturnReviewDetailsListWith2Elements() {
         //given
         String name = "Fulano da Silva";
         String description = "this is my option about journey miles";
@@ -57,7 +57,7 @@ class ReviewServiceTest {
 
         reviewService.create(reviewRegistrationData);
         reviewService.create(reviewRegistrationData);
-        Pageable pageable = PageRequest.of(0,10);
+        Pageable pageable = PageRequest.of(0, 10);
 
         //when
         Page<ReviewDetailsData> reviewsDetailsList = reviewService.findAll(pageable);
@@ -66,9 +66,9 @@ class ReviewServiceTest {
     }
 
     @Test
-    void shouldReturnEmptyReviewDetailsList(){
+    void shouldReturnEmptyReviewDetailsList() {
         //given
-        Pageable pageable = PageRequest.of(0,10);
+        Pageable pageable = PageRequest.of(0, 10);
         //when
         Page<ReviewDetailsData> reviewsDetailsList = reviewService.findAll(pageable);
         //then
@@ -76,7 +76,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    void shouldReturnReviewDetailsWhenFoundReviewById(){
+    void shouldReturnReviewDetailsWhenFoundReviewById() {
         //given
         String name = "Fulano da Silva";
         String description = "this is my option about journey miles";
@@ -93,7 +93,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    void shouldReturnEntityNotFoundExceptionWhenThereIsNoReviewWithID(){
+    void shouldReturnEntityNotFoundExceptionWhenThereIsNoReviewWithID() {
         //given
         Long id = 1L;
 
@@ -102,7 +102,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    void shouldReturnReviewNewDetailsWhenUpdateName(){
+    void shouldReturnReviewNewDetailsWhenUpdateName() {
         String oldFullName = "Fulano";
         String newFullName = "Ciclano";
         String description = "this is my review";
@@ -118,8 +118,9 @@ class ReviewServiceTest {
         assertThat(reviewDetails.description()).isEqualTo(description);
         assertThat(reviewDetails.photoPath()).isEqualTo(photoPath);
     }
+
     @Test
-    void shouldReturnReviewNewDetailsWhenUpdateDescription(){
+    void shouldReturnReviewNewDetailsWhenUpdateDescription() {
         String name = "Ciclano";
         String oldDescription = "this is my review";
         String newDescription = "this is my new review";
@@ -137,7 +138,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    void shouldReturnReviewNewDetailsWhenUpdatePhotopath(){
+    void shouldReturnReviewNewDetailsWhenUpdatePhotopath() {
         String name = "Ciclano";
         String description = "this is my review";
         String oldPhotoPath = "/my/photo.png";
@@ -152,6 +153,29 @@ class ReviewServiceTest {
         assertThat(reviewDetails.fullName()).isEqualTo(name);
         assertThat(reviewDetails.description()).isEqualTo(description);
         assertThat(reviewDetails.photoPath()).isEqualTo(newPhotoPath);
+    }
+
+    @Test
+    void shouldDeleteReviewWhenReceiveExistingId() {
+        //given
+        String name = "Ciclano";
+        String description = "this is my review";
+        String photoPath = "/my/photo.png";
+        ReviewDetailsData reviewDetailsData = reviewService.create(new ReviewRegistrationData(name, description, photoPath));
+        assertThat(repository.count()).isEqualTo(1);
+        //when
+        reviewService.delete(reviewDetailsData.id());
+        //then
+        assertThat(repository.count()).isEqualTo(0);
+    }
+
+    @Test
+    void shouldThrowEntityNotFoundExceptionWhenReceiveNoneExistingID() {
+        //given
+        Long id = 1L;
+
+        //when and then
+        assertThrows(EntityNotFoundException.class, () -> reviewService.delete(id));
     }
 
 

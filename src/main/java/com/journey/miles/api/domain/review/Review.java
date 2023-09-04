@@ -29,13 +29,13 @@ public class Review {
     }
 
     public void update(ReviewDetailsData data) {
-        if(data.fullName()!=null){
+        if (data.fullName() != null) {
             this.name = data.fullName();
         }
-        if(data.description()!=null){
+        if (data.description() != null) {
             this.description = data.description();
         }
-        if(data.photoPath()!=null){
+        if (data.photoPath() != null) {
             this.photoPath = data.photoPath();
         }
 

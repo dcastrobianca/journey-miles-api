@@ -29,18 +29,24 @@ public class ReviewController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<ReviewDetailsData>> findAll(@PageableDefault Pageable pageable){
+    public ResponseEntity<Page<ReviewDetailsData>> findAll(@PageableDefault Pageable pageable) {
         return ResponseEntity.ok(service.findAll(pageable));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ReviewDetailsData> findById(@PathVariable Long id){
+    public ResponseEntity<ReviewDetailsData> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
     @PutMapping
-    public ResponseEntity<ReviewDetailsData> update(@RequestBody @Valid ReviewDetailsData data){
+    public ResponseEntity<ReviewDetailsData> update(@RequestBody @Valid ReviewDetailsData data) {
         return ResponseEntity.ok(service.update(data));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
 }
