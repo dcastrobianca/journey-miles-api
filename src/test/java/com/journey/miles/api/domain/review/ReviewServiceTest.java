@@ -166,7 +166,7 @@ class ReviewServiceTest {
         //when
         reviewService.delete(reviewDetailsData.id());
         //then
-        assertThat(repository.count()).isEqualTo(0);
+        assertThat(repository.count()).isZero();
     }
 
     @Test
